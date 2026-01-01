@@ -1,285 +1,416 @@
 #pragma once
 #include <cstdint>
-#include "common/Data.h"
-#include <nlohmann/json.hpp>
-#include <iostream>
-#include <string>
-
-#include <wininet.h>
-#include <sstream>
-
-#pragma comment(lib, "wininet.lib")
 
 namespace Offset
 {
 
+	constexpr uint64_t XenuineDecrypt = 0xF242F28;
+	constexpr uint64_t UWorld = 0x10906498;
+	constexpr uint64_t GNames = 0x10B557D0;
+	constexpr uint64_t GNamesPtr = 0x8;
+	constexpr uint64_t ChunkSize = 0x3E28;
+	constexpr uint64_t GObjects = 0x108C7618;
+	constexpr uint64_t CurrentLevel = 0x3B8;
+	constexpr uint64_t Actors = 0x38;
+	constexpr uint64_t ActorsForGC = 0x4A8;
+	constexpr uint64_t GameInstance = 0x200;
+	constexpr uint64_t GameState = 0x68;
+	constexpr uint64_t LocalPlayer = 0x40;
+	constexpr uint64_t PlayerController = 0x38;
+	constexpr uint64_t AcknowledgedPawn = 0x4C0;
+	constexpr uint64_t PlayerCameraManager = 0x4E8;
 
-	inline uint64_t extractOffset(const std::string& offset, const std::string& key) {
-		size_t startPos = offset.find(key);
-		while (startPos != std::string::npos) {
-			size_t endPos = startPos + key.length();
-			if (endPos >= offset.length() || std::isspace(offset[endPos])) {
-				//std::cout << "找到键: " << key << " 起始位置: " << startPos << std::endl;
-				startPos = endPos;
-				// 查找 '=' 号的位置
-				size_t eqPos = offset.find('=', startPos);
-				if (eqPos != std::string::npos) {
-					//std::cout << "找到 '=' 号 起始位置: " << eqPos << std::endl;
-					startPos = eqPos + 1; // 移动到 '=' 之后
-					size_t lineEndPos = offset.find("\n", startPos);
-					if (lineEndPos == std::string::npos) {
-						lineEndPos = offset.length();
-					}
-					std::string line = offset.substr(startPos, lineEndPos - startPos);
-					//std::cout << "提取的行: " << line << std::endl;
-					std::stringstream ss(line);
-					uint64_t value;
-					ss >> std::ws; // 跳过前导空白字符
-					ss >> std::hex >> value;
-					if (ss.fail()) {
-						std::cerr << "Change 0x16 Failed !" << std::endl;
-						return 0;
-					}
-					return value;
-				}
-				else {
-					std::cerr << "Not Found '=' " << std::endl;
-				}
-			}
-			// 继续搜索下一个匹配的键
-			startPos = offset.find(key, startPos + 1);
-		}
-		std::cerr << "Not Found Key: " << key << std::endl;
-		return 30109433;
-	}
-#define BUF_SIZE 8192*2
-	static LPSTR GetInterNetURLText(LPCSTR  lpcInterNetURL, char* buff, DWORD& dwByteRead)
-	{
-		HINTERNET hSession;
-		LPSTR lpResult = NULL;
-		hSession = InternetOpen(L"WinInet", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-		__try
-		{
-			if (hSession != NULL)
-			{
-				HINTERNET hRequest;
-				hRequest = InternetOpenUrlA(hSession, lpcInterNetURL, NULL, 0, INTERNET_FLAG_RELOAD, 0);
-				__try
-				{
-					if (hRequest != NULL)
-					{
-						DWORD dwBytesRead;
-						char szBuffer[BUF_SIZE] = { 0 };
+	constexpr uint64_t ObjID = 0x1C;
+	constexpr uint64_t DecryptNameIndexRor = 0x1;
+	constexpr uint64_t DecryptNameIndexXorKey1 = 0x6B6D93A9;
+	constexpr uint64_t DecryptNameIndexXorKey2 = 0x884B1099;
+	constexpr uint64_t DecryptNameIndexXorKey3 = 0xFF0000;
+	constexpr uint64_t DecryptNameIndexRval = 0x18;
+	constexpr uint64_t DecryptNameIndexSval = 0x18;
+	constexpr uint64_t DecryptNameIndexDval = 0x8;
 
-						if (InternetReadFile(hRequest, szBuffer, BUF_SIZE, &dwBytesRead))
-						{
-							dwByteRead = dwBytesRead;
-							RtlMoveMemory(buff, szBuffer, dwByteRead);
-							return 0;
-						}
-					}
-				}
-				__finally
-				{
-					InternetCloseHandle(hRequest);
-				}
-			}
-		}
-		__finally
-		{
-			InternetCloseHandle(hSession);
-		}
-		return lpResult;
-	}
+	constexpr uint64_t ViewTarget = 0x1750;
+	constexpr uint64_t CameraCacheLocation = 0xA2C;
+	constexpr uint64_t CameraCacheRotation = 0x480;
+	constexpr uint64_t CameraCacheFOV = 0xA48;
+
+	constexpr uint64_t LastTeamNum = 0x1938;
+	constexpr uint64_t TeamNumber = 0x9DC;
+
+	constexpr uint64_t MyHUD = 0x4E0;
+	constexpr uint64_t BlockInputWidgetList = 0x5C8;
+	constexpr uint64_t bShowMouseCursor = 0x670;
+	constexpr uint64_t ComponentLocation = 0x2D0;
+	constexpr uint64_t ComponentToWorld = 0x2C0;
+	constexpr uint64_t CharacterState = 0x2810;
+	constexpr uint64_t CharacterName = 0x11B0;
+	constexpr uint64_t CharacterMovement = 0x7B8;
+	constexpr uint64_t WorldToMap = 0x110;
+	constexpr uint64_t LayoutData = 0x40;
+	constexpr uint64_t Offsets = 0x0;
+	constexpr uint64_t Alignment = 0x20;
+	constexpr uint64_t Visibility = 0xA9;
+	constexpr uint64_t SelectMinimapSizeIndex = 0x5D0;
+	constexpr uint64_t Slot = 0x38;
+	constexpr uint64_t WidgetStateMap = 0x550;
+
+	constexpr uint64_t FeatureRepObject = 0xD10;
+	constexpr uint64_t SafetyZonePosition = 0x148;
+	constexpr uint64_t SafetyZoneRadius = 0x13C;
+	constexpr uint64_t BlueZoneRadius = 0x138;
+	constexpr uint64_t BlueZonePosition = 0x12C;
+	constexpr uint64_t NumAliveTeams = 0x4DC;
+
+	constexpr uint64_t HeaFlag = 0x188;
+	constexpr uint64_t Health1 = 0x9A8;
+	constexpr uint64_t Health2 = 0xA40;
+	constexpr uint64_t Health3 = 0x994;
+	constexpr uint64_t Health4 = 0x980;
+	constexpr uint64_t Health5 = 0x995;
+	constexpr uint64_t Health6 = 0x990;
+	constexpr uint64_t Health_keys0 = 0xCEC7A598;
+	constexpr uint64_t Health_keys1 = 0x9B63B237;
+	constexpr uint64_t Health_keys2 = 0xCA5153A4;
+	constexpr uint64_t Health_keys3 = 0x373848C9;
+	constexpr uint64_t Health_keys4 = 0x4E911D0A;
+	constexpr uint64_t Health_keys5 = 0x23DDAA15;
+	constexpr uint64_t Health_keys6 = 0x945C9C8;
+	constexpr uint64_t Health_keys7 = 0xA420B121;
+	constexpr uint64_t Health_keys8 = 0xBAA7A58;
+	constexpr uint64_t Health_keys9 = 0xB1EF3787;
+	constexpr uint64_t Health_keys10 = 0xE27522B1;
+	constexpr uint64_t Health_keys11 = 0x868ADB52;
+	constexpr uint64_t Health_keys12 = 0xBD4EF2D5;
+	constexpr uint64_t Health_keys13 = 0x3793C907;
+	constexpr uint64_t Health_keys14 = 0xC9099E38;
+	constexpr uint64_t Health_keys15 = 0xE5D02AED;
+	constexpr uint64_t GroggyHealth = 0x1E70;
+
+	constexpr uint64_t PlayerArray = 0x428;
+	constexpr uint64_t AccountId = 0x708;
+	constexpr uint64_t PlayerName = 0x478;
+	constexpr uint64_t PlayerStatusType = 0x418;
+	constexpr uint64_t SquadMemberIndex = 0x6A0;
+	constexpr uint64_t PlayerState = 0x448;
+	constexpr uint64_t PlayerStatistics = 0x7A8;
+	constexpr uint64_t DamageDealtOnEnemy = 0x6B4;
+	constexpr uint64_t SpectatedCount = 0x3370;
+
+	constexpr uint64_t PartnerLevel = 0x926;
+	constexpr uint64_t SurvivalTier = 0xCC0;
+	constexpr uint64_t SurvivalLevel = 0xCC4;
+
+	constexpr uint64_t CharacterClanInfo = 0x940;
+
+	constexpr uint64_t EquippedWeapons = 0x208;
+	constexpr uint64_t WeaponProcessor = 0x9B0;
+	constexpr uint64_t CurrentWeaponIndex = 0x319;
+	constexpr uint64_t WeaponTrajectoryData = 0x1130;
+	constexpr uint64_t TrajectoryGravityZ = 0x1124;
+	constexpr uint64_t FiringAttachPoint = 0x8C0;
+	constexpr uint64_t ScopingAttachPoint = 0xCF0;
+	constexpr uint64_t TrajectoryConfig = 0x108;
+	constexpr uint64_t BallisticCurve = 0x28;
+	constexpr uint64_t FloatCurves = 0x38;
+	constexpr uint64_t Mesh3P = 0x810;
+
+	constexpr uint64_t Keys = 0x60;
+
+	constexpr uint64_t AttachedStaticComponentMap = 0x1508;
+
+	constexpr uint64_t WeaponConfig_WeaponClass = 0x729;
+	constexpr uint64_t ElapsedCookingTime = 0xB10;
+
+	constexpr uint64_t PlayerInput = 0x560;
+	constexpr uint64_t InputAxisProperties = 0x138;
+
+	constexpr uint64_t LastUpdateVelocity = 0x3E0;
+	constexpr uint64_t Mesh = 0x5F8;
+
+	constexpr uint64_t RootComponent = 0x1E8;
+	constexpr uint64_t StaticMesh = 0xAE8;
+	constexpr uint64_t Eyes = 0x75C;
+	constexpr uint64_t bAlwaysCreatePhysicsState = 0x498;
+
+	constexpr uint64_t VehicleMovement = 0x480;
+	constexpr uint64_t VehicleRiderComponent = 0x2120;
+	constexpr uint64_t ReplicatedMovement = 0xE0;
+	constexpr uint64_t LastVehiclePawn = 0x270;
+	constexpr uint64_t SeatIndex = 0x230;
+
+	constexpr uint64_t Wheels = 0x328;
+	constexpr uint64_t WheelLocation = 0x100;
+	constexpr uint64_t DampingRate = 0x54;
+	constexpr uint64_t ShapeRadius = 0x48;
+
+	constexpr uint64_t DroppedItemGroup = 0x350;
+	constexpr uint64_t ItemPackageItems = 0x5A8;
+	constexpr uint64_t DroppedItemGroupUItem = 0x880;
+
+	constexpr uint64_t AttachedItems = 0x868;
+	constexpr uint64_t WeaponAttachmentData = 0x130;
+	constexpr uint64_t ItemTable = 0xB0;
+	constexpr uint64_t ItemID = 0x268;
+	constexpr uint64_t DroppedItem = 0x470;
+
+	constexpr uint64_t AnimScriptInstance = 0xE30;
+	constexpr uint64_t PreEvalPawnState = 0x700;
+
+	constexpr uint64_t bIsScoping_CP = 0x92D;
+	constexpr uint64_t bIsReloading_CP = 0x805;
+	constexpr uint64_t RecoilADSRotation_CP = 0x8F4;
+	constexpr uint64_t ControlRotation_CP = 0x71C;
+	constexpr uint64_t LeanLeftAlpha_CP = 0x764;
+	constexpr uint64_t LeanRightAlpha_CP = 0x768;
+	constexpr uint64_t CurrentAmmoData = 0xC44;
+
+	constexpr uint64_t StaticSockets = 0xC8;
+	constexpr uint64_t StaticSocketName = 0x30;
+	constexpr uint64_t StaticRelativeScale = 0x50;
+	constexpr uint64_t StaticRelativeLocation = 0x38;
+	constexpr uint64_t StaticRelativeRotation = 0x44;
+
+	constexpr uint64_t InputYawScale = 0x664;
+
+	constexpr uint64_t AimOffsets = 0x1BB8;
+
+	constexpr uint64_t AntiCheatCharacterSyncManager = 0x300;
+
+	constexpr uint64_t TimeSeconds = 0x954;
+	constexpr uint64_t TimeTillExplosion = 0x844;
+	constexpr uint64_t ExplodeState = 0x5A0;
+	constexpr uint64_t TrainingMapGrid = 0x5B8;
+	constexpr uint64_t MortarRotation = 0x538;
+	constexpr uint64_t MortarEntity = 0x118;
+
+	constexpr uint64_t MapGrid_Map = 0x4B0;
+	constexpr uint64_t Gender = 0xAC0;
+
+	constexpr uint64_t MouseX = 0x4A18;
+	constexpr uint64_t MouseY = 0x4A19;
+
+	constexpr uint64_t SPOOFCALL = 0x22A2E05;
+	constexpr uint64_t LineTraceSingle = 0xB7C464C;
+	constexpr uint64_t HOOK = 0x103F96B0;
+	constexpr uint64_t HOOK_TWO = 0xBFFC7FE;
+
+	constexpr uint64_t InventoryFacade = 0x1948;
+	constexpr uint64_t Inventory = 0x418;
+	constexpr uint64_t InventoryItems = 0x568;
+	constexpr uint64_t InventoryItemCount = 0x570;
+	constexpr uint64_t InventoryItemTagItemCount = 0x40;
+
+	constexpr uint64_t Equipment = 0x430;
+	constexpr uint64_t ItemsArray = 0x508;
+	constexpr uint64_t Durability = 0x1F4;
+	constexpr uint64_t Durabilitymax = 0x1F0;
+
+	constexpr uint64_t VehicleCommonComponent = 0xB40;
+	constexpr uint64_t FloatingVehicleCommonComponent = 0x4F0;
+	constexpr uint64_t VehicleFuel = 0x2E0;
+	constexpr uint64_t VehicleFuelMax = 0x2E4;
+	constexpr uint64_t VehicleHealth = 0x2D8;
+	constexpr uint64_t VehicleHealthMax = 0x2DC;
+
+	constexpr uint64_t PhysxSDK = 0x1047BB08;
+	constexpr uint64_t PhysicsScene = 0x440;
+	constexpr uint64_t mPhysXScene = 0xD0;
+	constexpr uint64_t rigid_dynamics = 0x3B98;
+	constexpr uint64_t Unreal_Engine = 0x109027A0;
+	constexpr uint64_t Health = 0x1E70;
+
+  inline void Sever_Init()
+  {
 
 
-	inline void Sever_Init() {
+	GameData.Offset["XenuineDecrypt"] = XenuineDecrypt;
+	GameData.Offset["UWorld"] = UWorld;
+	GameData.Offset["GNames"] = GNames;
+	GameData.Offset["GNamesPtr"] = GNamesPtr;
+	GameData.Offset["ChunkSize"] = ChunkSize;
+	GameData.Offset["CurrentLevel"] = CurrentLevel;
+	GameData.Offset["Actors"] = Actors;
+	GameData.Offset["GameInstance"] = GameInstance;
+	GameData.Offset["GameState"] = GameState;
+	GameData.Offset["LocalPlayer"] = LocalPlayer;
+	GameData.Offset["PlayerController"] = PlayerController;
+	GameData.Offset["AcknowledgedPawn"] = AcknowledgedPawn;
+	GameData.Offset["PlayerCameraManager"] = PlayerCameraManager;
+	GameData.Offset["ObjID"] = ObjID;
+	GameData.Offset["DecryptNameIndexRor"] = DecryptNameIndexRor;
+	GameData.Offset["DecryptNameIndexXorKey1"] = DecryptNameIndexXorKey1;
+	GameData.Offset["DecryptNameIndexXorKey2"] = DecryptNameIndexXorKey2;
+	GameData.Offset["DecryptNameIndexXorKey3"] = DecryptNameIndexXorKey3;
+	GameData.Offset["DecryptNameIndexRval"] = DecryptNameIndexRval;
+	GameData.Offset["DecryptNameIndexSval"] = DecryptNameIndexSval;
+	GameData.Offset["DecryptNameIndexDval"] = DecryptNameIndexDval;
+	GameData.Offset["ViewTarget"] = ViewTarget;
+	GameData.Offset["CameraCacheLocation"] = CameraCacheLocation;
+	GameData.Offset["CameraCacheRotation"] = CameraCacheRotation;
+	GameData.Offset["CameraCacheFOV"] = CameraCacheFOV;
+	GameData.Offset["LastTeamNum"] = LastTeamNum;
+	GameData.Offset["TeamNumber"] = TeamNumber;
+	GameData.Offset["MyHUD"] = MyHUD;
+	GameData.Offset["BlockInputWidgetList"] = BlockInputWidgetList;
+	GameData.Offset["bShowMouseCursor"] = bShowMouseCursor;
+	GameData.Offset["ComponentLocation"] = ComponentLocation;
+	GameData.Offset["ComponentToWorld"] = ComponentToWorld;
+	GameData.Offset["CharacterState"] = CharacterState;
+	GameData.Offset["CharacterName"] = CharacterName;
+	GameData.Offset["CharacterMovement"] = CharacterMovement;
+	GameData.Offset["WorldToMap"] = WorldToMap;
+	GameData.Offset["LayoutData"] = LayoutData;
+	GameData.Offset["Offsets"] = Offsets;
+	GameData.Offset["Alignment"] = Alignment;
+	GameData.Offset["Visibility"] = Visibility;
 
-		
-		std::string url = "http://124.71.23.153/offset.txt";
-		
-		char buf[BUF_SIZE] = { 0 };
-		DWORD dwReadSize = 0;
-		GetInterNetURLText(url.c_str(), buf, dwReadSize);
-		std::string buffer(buf, dwReadSize);
-		const char* first_newline = static_cast<const char*>(memchr(buf, '\n', dwReadSize));
-		const int first_line_length = first_newline ? (first_newline - buf) : dwReadSize;
-		Utils::Log(1, "%.*s", first_line_length, buf);
-		GameData.Config.Overlay.FirstLineLength = first_line_length;
-		GameData.Offset["SPOOFCALL"] = extractOffset(buffer, "SPOOFCALL");
-		GameData.Offset["LineTraceSingle"] = extractOffset(buffer, "LineTraceSingle");
-		GameData.Offset["HOOK"] = extractOffset(buffer, "HOOK");
-		GameData.Offset["HOOK_TWO"] = extractOffset(buffer, "HOOK_TWO");
+	GameData.Offset["SelectMinimapSizeIndex"] = SelectMinimapSizeIndex;
+	GameData.Offset["Slot"] = Slot;
+	GameData.Offset["WidgetStateMap"] = WidgetStateMap;
+	GameData.Offset["FeatureRepObject"] = FeatureRepObject;
+	GameData.Offset["SafetyZonePosition"] = SafetyZonePosition;
+	GameData.Offset["SafetyZoneRadius"] = SafetyZoneRadius;
+	GameData.Offset["BlueZoneRadius"] = BlueZoneRadius;
+	GameData.Offset["BlueZonePosition"] = BlueZonePosition;
+	GameData.Offset["NumAliveTeams"] = NumAliveTeams;
+	GameData.Offset["Health"] = Health;
+	GameData.Offset["HeaFlag"] = HeaFlag;
+	GameData.Offset["Health1"] = Health1;
+	GameData.Offset["Health2"] = Health2;
+	GameData.Offset["Health3"] = Health3;
+	GameData.Offset["Health4"] = Health4;
+	GameData.Offset["Health5"] = Health5;
+	GameData.Offset["Health6"] = Health6;
+	GameData.Offset["Health_keys0"] = Health_keys0;
+	GameData.Offset["Health_keys1"] = Health_keys1;
+	GameData.Offset["Health_keys2"] = Health_keys2;
+	GameData.Offset["Health_keys3"] = Health_keys3;
+	GameData.Offset["Health_keys4"] = Health_keys4;
+	GameData.Offset["Health_keys5"] = Health_keys5;
+	GameData.Offset["Health_keys6"] = Health_keys6;
+	GameData.Offset["Health_keys7"] = Health_keys7;
+	GameData.Offset["Health_keys8"] = Health_keys8;
+	GameData.Offset["Health_keys9"] = Health_keys9;
+	GameData.Offset["Health_keys10"] = Health_keys10;
+	GameData.Offset["Health_keys11"] = Health_keys11;
+	GameData.Offset["Health_keys12"] = Health_keys12;
+	GameData.Offset["Health_keys13"] = Health_keys13;
+	GameData.Offset["Health_keys14"] = Health_keys14;
+	GameData.Offset["Health_keys15"] = Health_keys15;
 
-		GameData.Offset["Health"] = extractOffset(buffer, "Health4");
-		GameData.Offset["HeaFlag"] = extractOffset(buffer, "HeaFlag");
-		GameData.Offset["Health1"] = extractOffset(buffer, "Health1");
-		GameData.Offset["Health2"] = extractOffset(buffer, "Health2");
-		GameData.Offset["Health3"] = extractOffset(buffer, "Health3");
-		GameData.Offset["Health4"] = extractOffset(buffer, "Health4");
-		GameData.Offset["Health5"] = extractOffset(buffer, "Health5");
-		GameData.Offset["Health6"] = extractOffset(buffer, "Health6");
-		GameData.Offset["DecryptedHealthOffsets0"] = extractOffset(buffer, "Health_keys0");
-		GameData.Offset["DecryptedHealthOffsets1"] = extractOffset(buffer, "Health_keys1");
-		GameData.Offset["DecryptedHealthOffsets2"] = extractOffset(buffer, "Health_keys2");
-		GameData.Offset["DecryptedHealthOffsets3"] = extractOffset(buffer, "Health_keys3");
-		GameData.Offset["DecryptedHealthOffsets4"] = extractOffset(buffer, "Health_keys4");
-		GameData.Offset["DecryptedHealthOffsets5"] = extractOffset(buffer, "Health_keys5");
-		GameData.Offset["DecryptedHealthOffsets6"] = extractOffset(buffer, "Health_keys6");
-		GameData.Offset["DecryptedHealthOffsets7"] = extractOffset(buffer, "Health_keys7");
-		GameData.Offset["DecryptedHealthOffsets8"] = extractOffset(buffer, "Health_keys8");
-		GameData.Offset["DecryptedHealthOffsets9"] = extractOffset(buffer, "Health_keys9");
-		GameData.Offset["DecryptedHealthOffsets10"] = extractOffset(buffer, "Health_keys10");
-		GameData.Offset["DecryptedHealthOffsets11"] = extractOffset(buffer, "Health_keys11");
-		GameData.Offset["DecryptedHealthOffsets12"] = extractOffset(buffer, "Health_keys12");
-		GameData.Offset["DecryptedHealthOffsets13"] = extractOffset(buffer, "Health_keys13");
-		GameData.Offset["DecryptedHealthOffsets14"] = extractOffset(buffer, "Health_keys14");
-		GameData.Offset["DecryptedHealthOffsets15"] = extractOffset(buffer, "Health_keys15");
-		GameData.Offset["bEncryptedHealth"] = GameData.Offset["Health"] + 0x15;
-		GameData.Offset["EncryptedHealthOffset"] = GameData.Offset["Health"] + 0x14;
-		GameData.Offset["DecryptedHealthOffset"] = GameData.Offset["Health"] + 0x10;
-		GameData.Offset["MouseX"] = extractOffset(buffer, "MouseX");
-		GameData.Offset["MouseY"] = extractOffset(buffer, "MouseY");
-		GameData.Offset["bAlwaysCreatePhysicsState"] = extractOffset(buffer, "bAlwaysCreatePhysicsState");
-		GameData.Offset["XenuineDecrypt"] = extractOffset(buffer, "XenuineDecrypt");
-		GameData.Offset["UWorld"] = extractOffset(buffer, "UWorld");
-		GameData.Offset["GNames"] = extractOffset(buffer, "GNames");
-		GameData.Offset["GNamesPtr"] = extractOffset(buffer, "GNamesPtr");
-		GameData.Offset["ChunkSize"] = extractOffset(buffer, "ChunkSize");
-		GameData.Offset["DecryptNameIndexRor"] = extractOffset(buffer, "DecryptNameIndexRor");
-		GameData.Offset["DecryptNameIndexXorKey1"] = extractOffset(buffer, "DecryptNameIndexXorKey1");
-		GameData.Offset["DecryptNameIndexXorKey2"] = extractOffset(buffer, "DecryptNameIndexXorKey2");
-		GameData.Offset["DecryptNameIndexRval"] = extractOffset(buffer, "DecryptNameIndexRval");
-		GameData.Offset["DecryptNameIndexSval"] = extractOffset(buffer, "DecryptNameIndexSval");
-		GameData.Offset["ObjID"] = extractOffset(buffer, "ObjID");
-		GameData.Offset["GameInstance"] = extractOffset(buffer, "GameInstance");
-		GameData.Offset["LocalPlayer"] = extractOffset(buffer, "LocalPlayer");
-		GameData.Offset["Actors"] = extractOffset(buffer, "Actors");
-		GameData.Offset["ComponentToWorld"] = extractOffset(buffer, "ComponentToWorld");
-		GameData.Offset["ComponentLocation"] = extractOffset(buffer, "ComponentLocation");
-		GameData.Offset["TimeSeconds"] = extractOffset(buffer, "TimeSeconds");
-		GameData.Offset["WorldToMap"] = extractOffset(buffer, "WorldToMap");
-		GameData.Offset["CurrentLevel"] = extractOffset(buffer, "CurrentLevel");
-		GameData.Offset["Mesh"] = extractOffset(buffer, "Mesh");
-		GameData.Offset["CharacterMovement"] = extractOffset(buffer, "CharacterMovement");
-		GameData.Offset["LastUpdateVelocity"] = extractOffset(buffer, "LastUpdateVelocity");
-		GameData.Offset["RootComponent"] = extractOffset(buffer, "RootComponent");
-		GameData.Offset["PlayerController"] = extractOffset(buffer, "PlayerController");
-		GameData.Offset["PlayerInput"] = extractOffset(buffer, "PlayerInput");
-		GameData.Offset["InputYawScale"] = extractOffset(buffer, "InputYawScale");
-		GameData.Offset["bShowMouseCursor"] = extractOffset(buffer, "bShowMouseCursor");
-		GameData.Offset["AcknowledgedPawn"] = extractOffset(buffer, "AcknowledgedPawn");
-		GameData.Offset["MyHUD"] = extractOffset(buffer, "MyHUD");
-		GameData.Offset["InputAxisProperties"] = extractOffset(buffer, "InputAxisProperties");
-		GameData.Offset["AntiCtCharacterSyncManager"] = extractOffset(buffer, "AntiCheatCharacterSyncManager");
-		GameData.Offset["GameState"] = extractOffset(buffer, "GameState");
-		GameData.Offset["SafetyZoneRadius"] = extractOffset(buffer, "SafetyZoneRadius");
-		GameData.Offset["SafetyZonePosition"] = extractOffset(buffer, "SafetyZonePosition");
-		GameData.Offset["BlueZoneRadius"] = extractOffset(buffer, "BlueZoneRadius");
-		GameData.Offset["BlueZonePosition"] = extractOffset(buffer, "BlueZonePosition");
-		GameData.Offset["PlayerArray"] = extractOffset(buffer, "PlayerArray");
-		GameData.Offset["PlayerCameraManager"] = extractOffset(buffer, "PlayerCameraManager");
-		GameData.Offset["ViewTarget"] = extractOffset(buffer, "ViewTarget");
-		GameData.Offset["CameraCacheFOV"] = extractOffset(buffer, "CameraCacheFOV");
-		GameData.Offset["CameraCacheRotation"] = extractOffset(buffer, "CameraCacheRotation");
-		GameData.Offset["CameraCacheLocation"] = extractOffset(buffer, "CameraCacheLocation");
-		GameData.Offset["Gender"] = extractOffset(buffer, "Gender");
-		GameData.Offset["GroggyHealth"] = extractOffset(buffer, "GroggyHealth");
-		GameData.Offset["CharacterName"] = extractOffset(buffer, "CharacterName");
-		GameData.Offset["LastTeamNum"] = extractOffset(buffer, "LastTeamNum");
-		GameData.Offset["SpectatedCount"] = extractOffset(buffer, "SpectatedCount");
-		GameData.Offset["PlayerState"] = extractOffset(buffer, "PlayerState");
-		GameData.Offset["CharacterState"] = extractOffset(buffer, "CharacterState");
-		GameData.Offset["AnimScriptInstance"] = extractOffset(buffer, "AnimScriptInstance");
-		GameData.Offset["PreEvalPawnState"] = extractOffset(buffer, "PreEvalPawnState");
-		GameData.Offset["StaticMesh"] = extractOffset(buffer, "StaticMesh");
-		GameData.Offset["Eyes"] = extractOffset(buffer, "Eyes");
-		GameData.Offset["AimOffsets"] = extractOffset(buffer, "AimOffsets");
-		GameData.Offset["PlayerStatistics"] = extractOffset(buffer, "PlayerStatistics");
-		GameData.Offset["DamageDealtOnEnemy"] = extractOffset(buffer, "DamageDealtOnEnemy");
-		GameData.Offset["PartnerLevel"] = extractOffset(buffer, "PartnerLevel");
-		GameData.Offset["TeamNumber"] = extractOffset(buffer, "TeamNumber");
-		GameData.Offset["PlayerName"] = extractOffset(buffer, "PlayerName");
-		GameData.Offset["PlayerStatusType"] = extractOffset(buffer, "PlayerStatusType");
-		GameData.Offset["SquadMemberIndex"] = extractOffset(buffer, "SquadMemberIndex");
-		GameData.Offset["AccountId"] = extractOffset(buffer, "AccountId");
-		GameData.Offset["SurvivalTier"] = extractOffset(buffer, "SurvivalTier");
-		GameData.Offset["SurvivalLevel"] = extractOffset(buffer, "SurvivalLevel");
-		GameData.Offset["CharacterClanInfo"] = extractOffset(buffer, "CharacterClanInfo");
-		GameData.Offset["VehicleRiderComponent"] = extractOffset(buffer, "VehicleRiderComponent");
-		GameData.Offset["ReplicatedMovement"] = extractOffset(buffer, "ReplicatedMovement");
-		GameData.Offset["SeatIndex"] = extractOffset(buffer, "SeatIndex");
-		GameData.Offset["LastVehiclePawn"] = extractOffset(buffer, "LastVehiclePawn");
-		GameData.Offset["VehicleMovement"] = extractOffset(buffer, "VehicleMovement");
-		GameData.Offset["Wheels"] = extractOffset(buffer, "Wheels");
-		GameData.Offset["WheelLocation"] = extractOffset(buffer, "WheelLocation");
-		GameData.Offset["DampingRate"] = extractOffset(buffer, "DampingRate");
-		GameData.Offset["ShapeRadius"] = extractOffset(buffer, "ShapeRadius");
-		GameData.Offset["WidgetStateMap"] = extractOffset(buffer, "WidgetStateMap");
-		GameData.Offset["TrainingMapGrid"] = extractOffset(buffer, "TrainingMapGrid");
-		GameData.Offset["MapGrid_Map"] = extractOffset(buffer, "MapGrid_Map");
-		GameData.Offset["LayoutData"] = extractOffset(buffer, "LayoutData");
-		GameData.Offset["Visibility"] = extractOffset(buffer, "Visibility");
-		GameData.Offset["Slot"] = extractOffset(buffer, "Slot");
-		GameData.Offset["Offsets"] = extractOffset(buffer, "Offsets");
-		GameData.Offset["Alignment"] = extractOffset(buffer, "Alignment");
-		GameData.Offset["BlockInputWidgetList"] = extractOffset(buffer, "BlockInputWidgetList");
-		GameData.Offset["SelectMinimapSizeIndex"] = extractOffset(buffer, "SelectMinimapSizeIndex");
-		GameData.Offset["ItemID"] = extractOffset(buffer, "ItemID");
-		GameData.Offset["ItemTable"] = extractOffset(buffer, "ItemTable");
-		GameData.Offset["ItemPackageItems"] = extractOffset(buffer, "ItemPackageItems");
-		GameData.Offset["DroppedItemGroup"] = extractOffset(buffer, "DroppedItemGroup");
-		GameData.Offset["DroppedItem"] = extractOffset(buffer, "DroppedItem");
-		GameData.Offset["DroppedItemGroupUItem"] = extractOffset(buffer, "DroppedItemGroupUItem");
-		GameData.Offset["TimeTillExplosion"] = extractOffset(buffer, "TimeTillExplosion");
-		GameData.Offset["ExplodeState"] = extractOffset(buffer, "ExplodeState");
-		GameData.Offset["WeaponProcessor"] = extractOffset(buffer, "WeaponProcessor");
-		GameData.Offset["CurrentAmmoData"] = extractOffset(buffer, "CurrentAmmoData");
-		GameData.Offset["CurrentWeaponIndex"] = extractOffset(buffer, "CurrentWeaponIndex");
-		GameData.Offset["EquippedWeapons"] = extractOffset(buffer, "EquippedWeapons");
-		GameData.Offset["WeaponTrajectoryData"] = extractOffset(buffer, "WeaponTrajectoryData");
-		GameData.Offset["TrajectoryGravityZ"] = extractOffset(buffer, "TrajectoryGravityZ");
-		GameData.Offset["TrajectoryConfig"] = extractOffset(buffer, "TrajectoryConfig");
-		GameData.Offset["BallisticCurve"] = extractOffset(buffer, "BallisticCurve");
-		GameData.Offset["FloatCurves"] = extractOffset(buffer, "FloatCurves");
-		GameData.Offset["Keys"] = extractOffset(buffer, "Keys");
-		GameData.Offset["WeaponConfig_WeaponClass"] = extractOffset(buffer, "WeaponConfig_WeaponClass");
-		GameData.Offset["Mesh3P"] = extractOffset(buffer, "Mesh3P");
-		GameData.Offset["FiringAttachPoint"] = extractOffset(buffer, "FiringAttachPoint");
-		GameData.Offset["AttachedStaticComponentMap"] = extractOffset(buffer, "AttachedStaticComponentMap");
-		GameData.Offset["AttachedItems"] = extractOffset(buffer, "AttachedItems");
-		GameData.Offset["WeaponAttachmentData"] = extractOffset(buffer, "WeaponAttachmentData");
-		GameData.Offset["ScopingAttachPoint"] = extractOffset(buffer, "ScopingAttachPoint");
-		GameData.Offset["ElapsedCookingTime"] = extractOffset(buffer, "ElapsedCookingTime");
-		GameData.Offset["ControlRotation_CP"] = extractOffset(buffer, "ControlRotation_CP");
-		GameData.Offset["RecoilADSRotation_CP"] = extractOffset(buffer, "RecoilADSRotation_CP");
-		GameData.Offset["LeanLeftAlpha_CP"] = extractOffset(buffer, "LeanLeftAlpha_CP");
-		GameData.Offset["LeanRightAlpha_CP"] = extractOffset(buffer, "LeanRightAlpha_CP");
-		GameData.Offset["bIsScoping_CP"] = extractOffset(buffer, "bIsScoping_CP");
-		GameData.Offset["bIsReloading_CP"] = extractOffset(buffer, "bIsReloading_CP");
-		GameData.Offset["StaticSockets"] = extractOffset(buffer, "StaticSockets");
-		GameData.Offset["StaticSocketName"] = extractOffset(buffer, "StaticSocketName");
-		GameData.Offset["StaticRelativeLocation"] = extractOffset(buffer, "StaticRelativeLocation");
-		GameData.Offset["StaticRelativeRotation"] = extractOffset(buffer, "StaticRelativeRotation");
-		GameData.Offset["StaticRelativeScale"] = extractOffset(buffer, "StaticRelativeScale");
-		GameData.Offset["NumAliveTeams"] = extractOffset(buffer, "NumAliveTeams");
+	GameData.Offset["GroggyHealth"] = GroggyHealth;
+	GameData.Offset["PlayerArray"] = PlayerArray;
+	GameData.Offset["AccountId"] = AccountId;
+	GameData.Offset["PlayerName"] = PlayerName;
+	GameData.Offset["PlayerStatusType"] = PlayerStatusType;
+	GameData.Offset["SquadMemberIndex"] = SquadMemberIndex;
+	GameData.Offset["PlayerState"] = PlayerState;
+	GameData.Offset["PlayerStatistics"] = PlayerStatistics;
+	GameData.Offset["DamageDealtOnEnemy"] = DamageDealtOnEnemy;
+	GameData.Offset["SpectatedCount"] = SpectatedCount;
+	GameData.Offset["PartnerLevel"] = PartnerLevel;
+	GameData.Offset["SurvivalTier"] = SurvivalTier;
+	GameData.Offset["SurvivalLevel"] = SurvivalLevel;
+	GameData.Offset["CharacterClanInfo"] = CharacterClanInfo;
+	GameData.Offset["EquippedWeapons"] = EquippedWeapons;
+	GameData.Offset["WeaponProcessor"] = WeaponProcessor;
+	GameData.Offset["CurrentWeaponIndex"] = CurrentWeaponIndex;
+	GameData.Offset["WeaponTrajectoryData"] = WeaponTrajectoryData;
+	GameData.Offset["TrajectoryGravityZ"] = TrajectoryGravityZ;
+	GameData.Offset["FiringAttachPoint"] = FiringAttachPoint;
+	GameData.Offset["ScopingAttachPoint"] = ScopingAttachPoint;
+	GameData.Offset["TrajectoryConfig"] = TrajectoryConfig;
+	GameData.Offset["BallisticCurve"] = BallisticCurve;
+	GameData.Offset["FloatCurves"] = FloatCurves;
+	GameData.Offset["Mesh3P"] = Mesh3P;
+	GameData.Offset["Keys"] = Keys;
+	GameData.Offset["AttachedStaticComponentMap"] = AttachedStaticComponentMap;
+	GameData.Offset["WeaponConfig_WeaponClass"] = WeaponConfig_WeaponClass;
+	GameData.Offset["ElapsedCookingTime"] = ElapsedCookingTime;
+	GameData.Offset["PlayerInput"] = PlayerInput;
+	GameData.Offset["InputAxisProperties"] = InputAxisProperties;
+	GameData.Offset["LastUpdateVelocity"] = LastUpdateVelocity;
+	GameData.Offset["Mesh"] = Mesh;
+	GameData.Offset["RootComponent"] = RootComponent;
+	GameData.Offset["StaticMesh"] = StaticMesh;
+	GameData.Offset["Eyes"] = Eyes;
+	GameData.Offset["bAlwaysCreatePhysicsState"] = bAlwaysCreatePhysicsState;
+	GameData.Offset["VehicleMovement"] = VehicleMovement;
+	GameData.Offset["VehicleRiderComponent"] = VehicleRiderComponent;
+	GameData.Offset["ReplicatedMovement"] = ReplicatedMovement;
+	GameData.Offset["LastVehiclePawn"] = LastVehiclePawn;
+	GameData.Offset["SeatIndex"] = SeatIndex;
+	GameData.Offset["Wheels"] = Wheels;
+	GameData.Offset["WheelLocation"] = WheelLocation;
+	GameData.Offset["DampingRate"] = DampingRate;
+	GameData.Offset["ShapeRadius"] = ShapeRadius;
+	GameData.Offset["DroppedItemGroup"] = DroppedItemGroup;
+	GameData.Offset["ItemPackageItems"] = ItemPackageItems;
+	GameData.Offset["DroppedItemGroupUItem"] = DroppedItemGroupUItem;
+	GameData.Offset["AttachedItems"] = AttachedItems;
+	GameData.Offset["WeaponAttachmentData"] = WeaponAttachmentData;
+	GameData.Offset["ItemTable"] = ItemTable;
+	GameData.Offset["ItemID"] = ItemID;
+	GameData.Offset["DroppedItem"] = DroppedItem;
+	GameData.Offset["AnimScriptInstance"] = AnimScriptInstance;
+	GameData.Offset["PreEvalPawnState"] = PreEvalPawnState;
+	GameData.Offset["bIsScoping_CP"] = bIsScoping_CP;
+	GameData.Offset["bIsReloading_CP"] = bIsReloading_CP;
+	GameData.Offset["RecoilADSRotation_CP"] = RecoilADSRotation_CP;
+	GameData.Offset["ControlRotation_CP"] = ControlRotation_CP;
+	GameData.Offset["LeanLeftAlpha_CP"] = LeanLeftAlpha_CP;
+	GameData.Offset["LeanRightAlpha_CP"] = LeanRightAlpha_CP;
+	GameData.Offset["CurrentAmmoData"] = CurrentAmmoData;
+	GameData.Offset["StaticSockets"] = StaticSockets;
+	GameData.Offset["StaticSocketName"] = StaticSocketName;
+	GameData.Offset["StaticRelativeScale"] = StaticRelativeScale;
+	GameData.Offset["StaticRelativeLocation"] = StaticRelativeLocation;
+	GameData.Offset["StaticRelativeRotation"] = StaticRelativeRotation;
+	GameData.Offset["InputYawScale"] = InputYawScale;
+	GameData.Offset["AimOffsets"] = AimOffsets;
+	GameData.Offset["AntiCheatCharacterSyncManager"] = AntiCheatCharacterSyncManager;
+	GameData.Offset["TimeSeconds"] = TimeSeconds;
+	GameData.Offset["TimeTillExplosion"] = TimeTillExplosion;
+	GameData.Offset["ExplodeState"] = ExplodeState;
+	GameData.Offset["TrainingMapGrid"] = TrainingMapGrid;
+	GameData.Offset["MapGrid_Map"] = MapGrid_Map;
+	GameData.Offset["MouseX"] = MouseX;
+	GameData.Offset["MouseY"] = MouseY;
+	GameData.Offset["PhysxSDK"] = PhysxSDK;
+	GameData.Offset["InventoryFacade"] = InventoryFacade;
+	GameData.Offset["Inventory"] = Inventory;
+	GameData.Offset["InventoryItems"] = InventoryItems;
+	GameData.Offset["InventoryItemCount"] = InventoryItemCount;
+	GameData.Offset["InventoryItemTagItemCount"] = InventoryItemTagItemCount;
+	GameData.Offset["VehicleCommonComponent"] = VehicleCommonComponent;
+	GameData.Offset["FloatingVehicleCommonComponent"] = FloatingVehicleCommonComponent;
+	GameData.Offset["VehicleFuel"] = VehicleFuel;
+	GameData.Offset["VehicleFuelMax"] = VehicleFuelMax;
+	GameData.Offset["VehicleHealth"] = VehicleHealth;
+	GameData.Offset["VehicleHealthMax"] = VehicleHealthMax;
+	GameData.Offset["MortarRotation"] = MortarRotation;
+	GameData.Offset["MortarEntity"] = MortarEntity;
 
-		GameData.Offset["PhysxSDK"] = extractOffset(buffer, "Physx_sdk");
-		GameData.Offset["PhysxSDK"] = extractOffset(buffer, "PhysxSDK");
-		GameData.Offset["VehicleFuel"] = extractOffset(buffer, "VehicleFuel");
-		GameData.Offset["VehicleCommonComponent"] = extractOffset(buffer, "VehicleCommonComponent");
-		GameData.Offset["FloatingComponent"] = extractOffset(buffer, "FloatingVehicleCommonComponent");
-		GameData.Offset["VehicleFuelMax"] = extractOffset(buffer, "VehicleFuelMax");
-		GameData.Offset["VehicleHealth"] = extractOffset(buffer, "VehicleHealth");
-		GameData.Offset["VehicleHealthMax"] = extractOffset(buffer, "VehicleHealthMax");
 
-		GameData.Offset["InventoryFacade"] = extractOffset(buffer, "InventoryFacade");
-		GameData.Offset["Inventory"] = extractOffset(buffer, "Inventory");
-		GameData.Offset["InventoryItems"] = extractOffset(buffer, "InventoryItems");
-		GameData.Offset["InventoryItemCount"] = extractOffset(buffer, "InventoryItemCount");
-		GameData.Offset["InventoryItemTagItemCount"] = extractOffset(buffer, "InventoryItemTagItemCount");
-		GameData.Offset["FeatureRep"] = extractOffset(buffer, "FeatureRepObject");
+	GameData.Offset["Unreal_Engine"] = Unreal_Engine;
+	GameData.Offset["PhysicsScene"] = PhysicsScene;
+	GameData.Offset["mPhysXScene"] = mPhysXScene;
+	GameData.Offset["rigid_dynamics"] = rigid_dynamics;
+
+
+	GameData.Offset["SPOOFCALL"] = SPOOFCALL;
+	GameData.Offset["LineTraceSingle"] = LineTraceSingle;
+	GameData.Offset["HOOK"] = HOOK;
+	GameData.Offset["HOOK_TWO"] = HOOK_TWO;
+
+
+	GameData.Offset["Equipment"] = Equipment;
+	GameData.Offset["ItemsArray"] = ItemsArray;
+	GameData.Offset["Durability"] = Durability;
+	GameData.Offset["Durabilitymax"] = Durabilitymax;
 
 		return;
-	}
+
+  }
+
 }
